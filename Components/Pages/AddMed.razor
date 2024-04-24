@@ -1,0 +1,142 @@
+﻿@page "/med"
+@page "/med/{Id:int}"
+
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using kokos.Data
+@using kokos.Models
+@using kokos.Components.Account
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
+@inject DbHelperMethods db;
+
+
+
+<h3>AddMed</h3>
+
+<div class="row">
+    <div class="col-sm-4">
+        <EditForm Model="@med" OnSubmit="HandleSubmit">
+            <div class="mb-3">
+                <label for="Name" class="form-label"> Name </label>
+                <InputText id="name" @bind-Value="med.name" class="form-control"></InputText>
+            </div>
+            <div class="mb-3">
+                <label for="med.medType" class="form-label"> Type of med </label>
+                <InputSelect id="medType" @bind-Value="med.medType" class="form-select">
+                    <option value="">Select Type</option>
+                    @foreach (var medType in Enum.GetValues(typeof(MedType)).Cast<MedType>())
+                    {
+                        <option value="@medType.ToString()">@medType.ToString()</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="mb-3">
+                <label for="med.dosageType" class="form-label"> Dosage </label>
+                <InputSelect id="dosage" @bind-Value="med.dosageType" class="form-control">
+                    <option value="">Select Dosage</option>
+                    @foreach (var dosageType in Enum.GetValues(typeof(DosageType)).Cast<DosageType>())
+                    {
+                        <option value="@dosageType.ToString()">@dosageType.ToString()</option>
+                    }
+                </InputSelect>
+
+            </div> <div class="mb-3">
+                <label for="med.timeOfDay" class="form-label"> Dosage Time </label>
+                <InputSelect id="dosageTime" @bind-Value="med.timeOfDay" class="form-control">
+                    <option value="">Select Time</option>
+                    @foreach (var dosageTime in Enum.GetValues(typeof(TimeOfDay)).Cast<TimeOfDay>())
+                    {
+                        <option value="@dosageTime.ToString()">@dosageTime.ToString()</option>
+                    }
+                </InputSelect>
+            </div>
+            <button style="background-color: #8e44ad; border: none" type="submit" class="btn btn-primary">Submit</button>
+            <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-secondary" @onclick="(() => Cancel())">Cancel</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int? Id { get; set; }
+
+    private ClaimsPrincipal user;
+    private string userId;
+
+    //private Medication? med;
+    //private PatientsMeds? patientMed;
+    private CompleteMed? med;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            userId = userIdClaim?.Value;
+        }
+
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Id is not null)
+        {
+            var patientMed = db.GetPatientMed(userId, Id.Value);
+            Medication foundMed = db.GetMed(Id.Value);
+            med = new()
+                {
+                    name = foundMed.Name,
+                    medType = foundMed.medType,
+                    dosageType = foundMed.dosageType,
+                    dosage = patientMed.Dosage,
+                    timeOfDay = patientMed.Time
+                };
+        }
+        else
+        {
+            med = new()
+                {
+                    name = string.Empty,
+                    medType = MedType.Other,
+                    dosageType = DosageType.Other,
+                    dosage = 0,
+                    timeOfDay = TimeOfDay.Other
+                };
+        }
+    }
+
+
+    private void HandleSubmit()
+    {
+        NavigationManager.NavigateTo("/meds");
+    }
+
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/meds");
+    }
+
+
+    private class CompleteMed
+    {
+        public string name { get; set; }
+        public MedType medType { get; set; }
+        public DosageType dosageType { get; set; }
+        public int dosage { get; set; }
+        public TimeOfDay timeOfDay { get; set; }
+    }
+}

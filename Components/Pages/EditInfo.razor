@@ -1,0 +1,99 @@
+﻿@page "/editInfo"
+
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using kokos.Data
+@using kokos.Models
+@using kokos.Components.Account
+@using System.Security.Claims
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject DbHelperMethods db;
+
+
+
+<PageTitle>Change Info</PageTitle>
+
+<h3>editInfo</h3>
+
+<div class="row">
+    <div class="col-sm-4">
+        <EditForm Model="@Input" OnSubmit="HandleSubmit" FormName="dupa">
+            <div class="mb-3">
+                <label for="Name" class="form-label"> Name </label>
+                <InputText id="name" @bind-Value="Input.Name" class="form-control"></InputText>
+            </div>
+            <div class="mb-3">
+                <label for="Surname" class="form-label"> Surname </label>
+                <InputText id="surname" @bind-Value="Input.Surname" class="form-control"></InputText>
+            </div>
+            <div class="mb-3">
+                <label for="Age" class="form-label"> Age </label>
+                <InputNumber id="age" @bind-Value="Input.Age" class="form-control"></InputNumber>
+            </div>
+            <div class="mb-3">
+                <label for="Height" class="form-label"> Height </label>
+                <InputNumber id="height" @bind-Value="Input.Height" class="form-control"></InputNumber>
+            </div>
+            <div class="mb-3">
+                <label for="Weight" class="form-label"> Weight </label>
+                <InputNumber id="weight" @bind-Value="Input.Weight" class="form-control"></InputNumber>
+            </div>
+            <button style="background-color: #8e44ad; border: none" type="submit" class="btn btn-primary">Submit</button>
+        </EditForm>
+    </div>
+</div>
+
+
+
+
+@code {
+
+    private ClaimsPrincipal user;
+    private PatientInfo pInfo = new();
+    private InputModel Input = new();
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        var userId = userIdClaim?.Value;
+        pInfo = db.GetPatientInfo(userId);
+        Input.Name = pInfo.Name;
+        Input.Surname = pInfo.Surname;
+        Input.Age = pInfo.Age;
+        Input.Height = pInfo.Height;
+        Input.Weight = pInfo.Weight;
+    }
+
+    private void HandleSubmit(){
+        pInfo.Name = Input.Name;
+        pInfo.Surname = Input.Surname;
+        pInfo.Age = Input.Age;
+        pInfo.Height = Input.Height;
+        pInfo.Weight = Input.Weight;
+        db.EditPatientInfo(pInfo);
+
+        NavigationManager.NavigateTo("/patientProfile");
+    }
+
+    public class InputModel{
+        public string Name { get; set; }
+        public string Surname { get; set; } 
+        public int Age { get; set; }
+        public int Height { get; set; }
+        public int Weight { get; set; }
+    }
+}

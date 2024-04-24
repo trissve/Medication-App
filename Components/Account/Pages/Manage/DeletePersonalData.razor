@@ -53,6 +53,7 @@
     {
         Input ??= new();
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        var x = user.Id;
         requirePassword = await UserManager.HasPasswordAsync(user);
     }
 

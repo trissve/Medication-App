@@ -1,0 +1,118 @@
+﻿@page "/meds"
+
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using kokos.Data
+@using kokos.Models
+@using kokos.Components.Account
+@using System.Security.Claims
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject DbHelperMethods db;
+
+<PageTitle>Meds</PageTitle>
+<h3>Your meds</h3>
+
+@if(meds.Count == 0)
+{
+<p><em>No meds added</em></p>
+
+<div class="row mb-4">
+    <div class="col-sm-6">
+        <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary" @onclick="AddMed">New med</button>
+    </div>
+</div>
+}
+else
+{
+<div class="row mb-4">
+    <div class="col-sm-6">
+        <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary" @onclick="AddMed">New med</button>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Dosage Type</th>
+            <th>Dosage</th>
+            <th>Time of day</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int x = 0; x < meds.Count; x++)
+        {
+            <tr>
+                <td>@meds.ElementAt(x).Name</td>
+                <td>@meds.ElementAt(x).medType</td>
+                <td>@meds.ElementAt(x).dosageType</td>
+                <td>@patientMeds.ElementAt(x).Dosage</td>
+                <td>@patientMeds.ElementAt(x).Time</td>
+                <td>
+                    <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary" @onclick="(() => EditMed(meds.ElementAt(x).Id))">Edit</button>
+                    <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary" @onclick="(() => EditMed(meds.ElementAt(x).Id))">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+}
+
+
+
+
+@code {
+
+    private ClaimsPrincipal user;
+    private string userId;
+    private PatientInfo pInfo = new();
+    private List<Medication> meds = new();
+    private List<PatientsMeds> patientMeds = new();
+
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        userId = userIdClaim?.Value;
+
+        if(userId != null)
+        {
+            Console.WriteLine("USER ID: " + userId);
+            patientMeds = db.GetPatientMeds(userId);
+
+            foreach(PatientsMeds x in patientMeds)
+            {
+                var med = db.GetMed(x.MedId);
+                meds.Add(med);
+            }
+        }
+
+    }
+
+
+    private void AddMed()
+    {
+        NavigationManager.NavigateTo("/med");
+    }
+
+
+    private void EditMed(int id)
+    {
+        NavigationManager.NavigateTo($"/med/{id}");
+    }
+}
