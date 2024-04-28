@@ -49,17 +49,17 @@ else
         </tr>
     </thead>
     <tbody>
-        @for (int x = 0; x < meds.Count; x++)
+        @foreach(var med in meds)
         {
             <tr>
-                <td>@meds.ElementAt(x).Name</td>
-                <td>@meds.ElementAt(x).medType</td>
-                <td>@meds.ElementAt(x).dosageType</td>
-                <td>@patientMeds.ElementAt(x).Dosage</td>
-                <td>@patientMeds.ElementAt(x).Time</td>
+                <td>@med.name</td>
+                <td>@med.medType</td>
+                <td>@med.dosageType</td>
+                <td>@med.dosage</td>
+                <td>@med.timeOfDay</td>
                 <td>
-                    <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary" @onclick="(() => EditMed(meds.ElementAt(x).Id))">Edit</button>
-                    <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary" @onclick="(() => EditMed(meds.ElementAt(x).Id))">Delete</button>
+                    <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary" @onclick="(() => EditMed(med.id))">Edit</button>
+                    <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary" @onclick="(() => Delete(med.id))">Delete</button>
                 </td>
             </tr>
         }
@@ -75,7 +75,7 @@ else
     private ClaimsPrincipal user;
     private string userId;
     private PatientInfo pInfo = new();
-    private List<Medication> meds = new();
+    private List<CompleteMed> meds = new();
     private List<PatientsMeds> patientMeds = new();
 
 
@@ -86,19 +86,26 @@ else
     protected override async Task OnInitializedAsync()
     {
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        user = authState.User;
         var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
         userId = userIdClaim?.Value;
 
         if(userId != null)
         {
-            Console.WriteLine("USER ID: " + userId);
+            //Console.WriteLine("USER ID: " + userId);
             patientMeds = db.GetPatientMeds(userId);
 
             foreach(PatientsMeds x in patientMeds)
             {
                 var med = db.GetMed(x.MedId);
-                meds.Add(med);
+                CompleteMed completeMed = new CompleteMed();
+                completeMed.id = x.Id;
+                completeMed.name = med.Name;
+                completeMed.medType = med.medType;
+                completeMed.dosageType = med.dosageType;
+                completeMed.dosage = x.Dosage;
+                completeMed.timeOfDay = x.Time;
+                meds.Add(completeMed);
             }
         }
 
@@ -107,12 +114,31 @@ else
 
     private void AddMed()
     {
-        NavigationManager.NavigateTo("/med");
+        NavigationManager.NavigateTo("/addMed");
     }
 
 
     private void EditMed(int id)
     {
-        NavigationManager.NavigateTo($"/med/{id}");
+        NavigationManager.NavigateTo($"/addMed/{id}");
+    }
+
+    private void Delete(int id)
+    {
+        //Console.WriteLine("ID: " + id);
+        db.DeletePatientMed(id);
+
+        NavigationManager.NavigateTo("/meds", forceLoad: true);
+    }
+
+
+    private class CompleteMed
+    {
+        public int id { get; set; }   //tutaj nie jest id medu, tylko id leku w patientsMeds
+        public string name { get; set; }
+        public MedType medType { get; set; }
+        public DosageType dosageType { get; set; }
+        public int dosage { get; set; }
+        public TimeOfDay timeOfDay { get; set; }
     }
 }
