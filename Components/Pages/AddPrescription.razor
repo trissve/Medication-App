@@ -1,0 +1,112 @@
+@page "/addPrescription"
+@page "/addPrescription/{Id:int}"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using kokos.Data
+@using kokos.Models
+@using kokos.Components.Account
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
+@inject DbHelperMethods db;
+
+<h2>Wystaw Receptę</h2>
+SearchPatientsAsync
+<div class="row">
+    <div class="col-sm-4">
+        <EditForm Model="@prescription" OnSubmit="HandleSubmit" FormName="AddPrescription">
+
+
+            <div class="mb-3">
+                <label for="prescription.patientId" class="form-label">Wybierz pacjenta</label>
+                <InputSelect id="patientId" @bind-Value="prescription.patientId" class="form-select" required>
+                    <option value="">Wybierz pacjenta</option>
+                    @foreach (var patient in patients)
+                    {
+                        <option value="@patient">@patient.Name @patient.Surname</option>
+                    }
+                </InputSelect>
+            </div>
+            <button style="background-color: #8e44ad; border: none" type="submit"
+                class="btn btn-primary">Submit</button>
+            <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-secondary"
+                @onclick="(() => Cancel())">Cancel</button>
+        </EditForm>
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int? Id { get; set; }
+
+    private ClaimsPrincipal user;
+    private string userId;
+    private PatientInfo pInfo = new();
+    bool isEdit = false;
+    private int count = 0;
+
+    private Prescription? prescription = new Prescription();
+    private List<PatientInfo> patients = new List<PatientInfo>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            userId = userIdClaim?.Value;
+        }
+        patients = db.GetPatients(); // Fetch the list of patients from the database
+    }
+
+
+    protected override void OnParametersSet()
+    {
+        if (Id is not null)
+        {
+            isEdit = true;
+            prescription = db.GetPrescription(Id.Value);
+            count = prescription.medList.Count;
+        }
+        else
+            prescription.doctorId = userId;
+    }
+
+
+
+    private void HandleSubmit()
+    {
+        Console.WriteLine($"PatientID {prescription.patientId}");
+        prescription.patientId = "7eeaa8c1-b5e3-4ddd-b85b-5b02bbbe930b";
+        prescription.date = DateTime.UtcNow.ToLocalTime();
+        Console.WriteLine($"PatientID {prescription.patientId}");
+        if (isEdit)
+        {
+            db.EditPrescription(prescription);
+            NavigationManager.NavigateTo("/prescriptions");
+        }
+        else
+        {
+            db.AddPrescription(prescription);
+            NavigationManager.NavigateTo("/prescriptions");
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/prescriptions");
+    }
+    private void AddMedication()
+    {
+        prescription.medList.Add(new Medication());
+        count++;
+    }
+}

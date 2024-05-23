@@ -24,7 +24,8 @@
 {
     <h3>Edit Med</h3>
 }
-else{
+else
+{
     <h3>Add Med</h3>
 }
 
@@ -34,7 +35,7 @@ else{
         <EditForm Model="@med" OnSubmit="HandleSubmit" FormName="AddMed">
             <div class="mb-3">
                 <label for="Name" class="form-label"> Name </label>
-                <InputText id="name" @bind-Value="med.name" class="form-control" disabled="@isEdit"></InputText>
+                <InputText id="name" @bind-Value="med.Name" class="form-control" disabled="@isEdit"></InputText>
             </div>
             <div class="mb-3">
                 <label for="med.medType" class="form-label"> Type of med </label>
@@ -49,24 +50,24 @@ else{
             </div>
             <div class="mb-3">
                 <label for="med.dosageType" class="form-label"> Dosage </label>
-                
-                <InputSelect id="dosageType" @bind-Value="med.dosageType" class="form-control" disabled="@isEdit">
+
+                <InputSelect id="DosageType" @bind-Value="med.dosageType" class="form-control" disabled="@isEdit">
                     <option value="">Select Dosage</option>
                     @foreach (var dosageType in Enum.GetValues(typeof(DosageType)).Cast<DosageType>())
                     {
                         <option value="@dosageType.ToString()">@dosageType.ToString()</option>
                     }
                 </InputSelect>
-            </div> 
-
-            <div class="mb-3">
-                <label for="med.dosage" class="form-label"> Dosage amount </label>
-                <InputNumber id="dosage" @bind-Value="med.dosage" class="form-control"></InputNumber>
             </div>
 
             <div class="mb-3">
-                <label for="med.timeOfDay" class="form-label"> Dosage Time </label>
-                <InputSelect id="dosageTime" @bind-Value="med.timeOfDay" class="form-control">
+                <label for="med.Dosage" class="form-label"> Dosage amount </label>
+                <InputNumber id="dosage" @bind-Value="med.Dosage" class="form-control"></InputNumber>
+            </div>
+
+            <div class="mb-3">
+                <label for="med.Time" class="form-label"> Dosage Time </label>
+                <InputSelect id="dosageTime" @bind-Value="med.Time" class="form-control">
                     <option value="">Select Time</option>
                     @foreach (var dosageTime in Enum.GetValues(typeof(TimeOfDay)).Cast<TimeOfDay>())
                     {
@@ -74,8 +75,10 @@ else{
                     }
                 </InputSelect>
             </div>
-            <button style="background-color: #8e44ad; border: none" type="submit" class="btn btn-primary">Submit</button>
-            <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-secondary" @onclick="(() => Cancel())">Cancel</button>
+            <button style="background-color: #8e44ad; border: none" type="submit"
+                class="btn btn-primary">Submit</button>
+            <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-secondary"
+                @onclick="(() => Cancel())">Cancel</button>
         </EditForm>
     </div>
 </div>
@@ -88,10 +91,10 @@ else{
     private ClaimsPrincipal user;
     private string userId;
     private PatientInfo pInfo = new();
-    private Medication medication = new();
+    @* private Medication medication = new(); *@
     bool isEdit = false;
 
-    private CompleteMed? med = new();
+    private Medication? med = new();
 
 
     protected override async Task OnInitializedAsync()
@@ -107,20 +110,12 @@ else{
     }
 
 
-
-
     protected override void OnParametersSet()
     {
         if (Id is not null)
         {
             isEdit = true;
-            PatientsMeds x = db.GetPatientMed(Id.Value);
-            Medication y = db.GetMed(x.MedId);
-            med.name = y.Name;
-            med.medType = y.medType;
-            med.dosageType = y.dosageType;
-            med.dosage = x.Dosage;
-            med.timeOfDay = x.Time;
+            med = db.GetMed(Id.Value);
         }
     }
 
@@ -130,71 +125,21 @@ else{
     {
         if (isEdit)
         {
-            PatientsMeds pMed = new PatientsMeds();
-            pMed.UserId = userId;
-            pMed.MedId = db.GetMedId(med.name);
-            pMed.Dosage = med.dosage;
-            pMed.Time = med.timeOfDay;
-
-            db.DeletePatientMed(Id.Value);
-            db.AddPatientsMed(pMed);
+            db.EditMed(med);
             NavigationManager.NavigateTo("/meds");
         }
         else
         {
-            if (db.DoesMedExist(med.name))
-            {
-                var medId2 = db.GetMedId(med.name);
-
-                PatientsMeds patientMed = new PatientsMeds();
-                patientMed.MedId = medId2;
-                patientMed.UserId = userId;
-                patientMed.Dosage = med.dosage;
-                patientMed.Time = med.timeOfDay;
-
-                db.AddPatientsMed(patientMed);
-
-                NavigationManager.NavigateTo("/meds");
-
-            }
-            else
-            {
-              medication.Name = med.name;
-              medication.medType = med.medType;
-              medication.dosageType = med.dosageType;
-              db.AddMed(medication);
-
-              int medId = db.GetMedId(medication.Name);
-
-              PatientsMeds patientMed = new PatientsMeds();
-              patientMed.MedId = medId;
-              patientMed.UserId = userId;
-              patientMed.Dosage = med.dosage;
-              patientMed.Time = med.timeOfDay;
-
-              db.AddPatientsMed(patientMed);
-
-              NavigationManager.NavigateTo("/meds");  
-            }
-             
+            med.userId = userId;
+            med.Taken = false;
+            db.AddMed(med);
+            NavigationManager.NavigateTo("/meds");
         }
-
-        
     }
 
 
     private void Cancel()
     {
         NavigationManager.NavigateTo("/meds");
-    }
-
-
-    private class CompleteMed
-    {
-        public string name { get; set; }
-        public MedType medType { get; set; }
-        public DosageType dosageType { get; set; }
-        public int dosage { get; set; }
-        public TimeOfDay timeOfDay { get; set; }
     }
 }
