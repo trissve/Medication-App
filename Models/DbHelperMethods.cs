@@ -42,6 +42,8 @@ namespace kokos.Models
 
         public Medication GetMed(int medId)
         {
+            // var med = db.Meds.FirstOrDefault(m => m.Id == medId);
+            // Console.WriteLine($"Med NAME: {med.Name}");
             return db.Meds.FirstOrDefault(m => m.Id == medId);
         }
 
@@ -76,12 +78,25 @@ namespace kokos.Models
         }
         public Prescription GetPrescription(int preId)
         {
-            return db.Prescriptions.FirstOrDefault(m => m.Id == preId);
+            var pre = db.Prescriptions.FirstOrDefault(m => m.Id == preId);
+            Console.WriteLine($"Prescription ID: {preId}");
+            return pre;
         }
         public void AddPrescription(Prescription pre)
         {
             db.Prescriptions.Add(pre);
             db.SaveChanges();
+        }
+
+        public void DeletePrescription(int id)
+        {
+            var pre = db.Prescriptions.FirstOrDefault(m => m.Id == id);
+
+            if (pre != null)
+            {
+                db.Prescriptions.Remove(pre);
+                db.SaveChanges();
+            }
         }
 
         public void AddPatientsMed(Medication pMed)
@@ -115,6 +130,18 @@ namespace kokos.Models
                 db.Meds.Remove(pMed);
                 db.SaveChanges();
             }
+        }
+
+        public List<Medication> GetMedList(int id)
+        {
+
+            var medList = db.Meds.Where(m => m.prescrId == id).ToList();
+            // Console.WriteLine($"COUNT: {medList.Count()} ID: {id}");
+            // foreach (var med in medList)
+            // {
+            //     Console.WriteLine($"Name: {med.Name}, medId: {med.Id}, prescrID: {med.prescrId}");
+            // }
+            return medList;
         }
         public List<Medication> GenerateExampleList()
         {

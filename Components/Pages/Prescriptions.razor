@@ -45,7 +45,8 @@
                             <td>
                                 <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
                                     @onclick="(() => EditPrescription(prescription.Id))">Edit</button>
-                                <!-- Przyciski do akcji, np. edytuj, usuń -->
+                                <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
+                                    @onclick="(() => Delete(prescription.Id))">Delete</button>
                             </td>
                         </tr>
                     }
@@ -103,4 +104,10 @@
         NavigationManager.NavigateTo($"/addPrescription/{id}");
     }
 
+    private void Delete(int id)
+    {
+        db.DeletePrescription(id);
+
+        NavigationManager.NavigateTo("/prescriptions", forceLoad: true);
+    }
 }
