@@ -1,0 +1,72 @@
+@page "/patients"
+
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using kokos.Data
+@using kokos.Models
+@using kokos.Components.Account
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
+@inject DbHelperMethods db
+
+<h2>Lista Pacjentów</h2>
+
+@if (patients == null)
+{
+    <p>Ładowanie danych pacjentów...</p>
+}
+else if (patients.Count == 0)
+{
+    <p>Brak pacjentów w systemie.</p>
+}
+else
+{
+    <table class="table">
+    <thead>
+        <tr>
+            <th>Imię</th>
+            <th>Nazwisko</th>
+            <th>Wiek</th>
+            <th>Wzrost</th>
+            <th>Waga</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var patient in patients)
+            {
+                <tr>
+                    <td>@patient.Name</td>
+                    <td>@patient.Surname</td>
+                    <td>@patient.Age</td>
+                    <td>@patient.Height</td>
+                    <td>@patient.Weight</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<PatientInfo> patients;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            var userId = userIdClaim?.Value;
+
+            patients = db.GetPatients();
+        }
+    }
+}

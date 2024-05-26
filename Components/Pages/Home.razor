@@ -13,7 +13,6 @@
 @inject DbHelperMethods db;
 
 <style>
-    /* Customize the label (the container) */
     .container {
         display: block;
         position: relative;
@@ -21,13 +20,9 @@
         margin-bottom: 12px;
         cursor: pointer;
         font-size: 22px;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
         user-select: none;
     }
 
-    /* Hide the browser's default checkbox */
     .container input {
         position: absolute;
         opacity: 0;
@@ -36,7 +31,6 @@
         width: 0;
     }
 
-    /* Create a custom checkbox */
     .checkmark {
         position: absolute;
         top: 0;
@@ -46,29 +40,24 @@
         background-color: #eee;
     }
 
-    /* On mouse-over, add a grey background color */
     .container:hover input~.checkmark {
         background-color: #ccc;
     }
 
-    /* When the checkbox is checked, add a blue background */
     .container input:checked~.checkmark {
         background-color: #9e4caf;
     }
 
-    /* Create the checkmark/indicator (hidden when not checked) */
     .checkmark:after {
         content: "";
         position: absolute;
         display: none;
     }
 
-    /* Show the checkmark when checked */
     .container input:checked~.checkmark:after {
         display: block;
     }
 
-    /* Style the checkmark/indicator */
     .container .checkmark:after {
         left: 9px;
         top: 5px;
@@ -76,14 +65,11 @@
         height: 10px;
         border: solid white;
         border-width: 0 3px 3px 0;
-        -webkit-transform: rotate(45deg);
-        -ms-transform: rotate(45deg);
         transform: rotate(45deg);
     }
 
     .modern-button {
         background-color: #9e4caf;
-        /* Green */
         border: none;
         color: white;
         padding: 10px 20px;
@@ -97,45 +83,9 @@
     }
 
     .modern-button:hover {
-        background-color: #9e4caf;
-
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .checkbox-container input[type="checkbox"] {
-            display: none;
-        }
-
-        .custom-checkbox {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            background-color: #eee;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .custom-checkbox:checked {
-            background-color: #9e4caf;
-            /* Green */
-        }
-
-        .custom-checkbox-label {
-            margin-left: 10px;
-            font-size: 16px;
-            color: #333;
-        }
-
+        background-color: #7b3790;
     }
 </style>
-
-@* <head>
-<link rel="stylesheet" type="text/css" href="kokos.Components.Layout.styles.css">
-</head> *@
 
 <PageTitle>Home</PageTitle>
 
@@ -144,21 +94,20 @@
 
         @if (isDoctor)
         {
-            <h1>Hello Doctor!</h1>
+            <h1>Hello!</h1>
         }
         else if (isPatient)
         {
-            <h1>Hello Patient!</h1>
+            <h1>Hello!</h1>
             <h2>Your Medications:</h2>
-            <form>
-            @foreach (var medication in medList)
+            <form @onsubmit="@SaveMedications">
+                @foreach (var medication in medList)
                 {
                     <div>
                         <label class="container">@medication.Name
-                            <input type="checkbox" checked="@medication.Taken">
+                            <input type="checkbox" checked="@medication.Taken" @onchange="(e) => ToggleTaken(e, medication)">
                             <span class="checkmark"></span>
                         </label>
-
                     </div>
                 }
                 <button type="submit" class="modern-button">Save</button>
@@ -175,12 +124,10 @@
     </NotAuthorized>
 </AuthorizeView>
 
-
 @code
 {
-    private string? message;
     private ApplicationUser user = default!;
-    List<Medication> medList;
+    List<Medication> medList = new();
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -193,20 +140,30 @@
         if (SignInManager.IsSignedIn(HttpContext.User))
         {
             user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-
             isDoctor = await UserManager.IsInRoleAsync(user, "Doctor");
             isPatient = await UserManager.IsInRoleAsync(user, "Patient");
-            Console.WriteLine("isDoctor: " + isDoctor);
+
             if (isPatient)
             {
                 medList = db.GetPatientMeds(user.Id);
             }
         }
     }
-    @* private void OnCheckboxChange(bool taken, Medication medication)
-{
-medication.Name = taken;
-db.EditMed(medication);
-} *@
+
+    private void ToggleTaken(ChangeEventArgs e, Medication medication)
+    {
+        medication.Taken = (bool)e.Value;
+    }
+
+    private async Task SaveMedications()
+    {
+        @* Console.WriteLine($"Taken: {med.Taken}"); *@
+        foreach (var med in medList)
+        {
+
+            db.EditMed(med);
+        }
+
+        // Optional: Display a success message or refresh the list
+    }
 }
-@* @onchange="@(e => OnCheckboxChange((bool)e.Value, medication))" *@

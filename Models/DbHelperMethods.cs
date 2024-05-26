@@ -67,9 +67,13 @@ namespace kokos.Models
         {
             return db.Meds.Where(m => m.userId == userId).ToList();
         }
-        public List<Prescription> GetPrescriptions(string userId)
+        public List<Prescription> GetDoctorPrescriptions(string userId)
         {
-            return db.Prescriptions.ToList();
+            return db.Prescriptions.Where(m => m.doctorId == userId).ToList();
+        }
+        public List<Prescription> GetPatientPrescriptions(string userId)
+        {
+            return db.Prescriptions.Where(m => m.patientId == userId).ToList();
         }
         public void EditPrescription(Prescription pre)
         {

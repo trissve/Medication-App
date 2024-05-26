@@ -1,4 +1,4 @@
-﻿@page "/prescriptions"
+﻿@page "/prescriptionsDoctor"
 
 @rendermode InteractiveServer
 
@@ -20,11 +20,8 @@
 
 <AuthorizeView>
     <Authorized>
-
-        @if (isDoctor)
-        {
-            <h2>Hello Doctor!</h2>
-            <table class="table">
+        <h2>Hello Doctor!</h2>
+        <table class="table">
             <thead>
                 <tr>
                     <th>Id</th>
@@ -36,32 +33,29 @@
             </thead>
             <tbody>
                 @foreach (var prescription in prescriptionList)
-                    {
-                        <tr>
-                            <td>@prescription.Id</td>
-                            <td>@prescription.patientId</td>
-                            <td>@prescription.doctorId</td>
-                            <td>@prescription.date</td>
-                            <td>
-                                <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
-                                    @onclick="(() => EditPrescription(prescription.Id))">Edit</button>
-                                <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
-                                    @onclick="(() => Delete(prescription.Id))">Delete</button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
+                {
+                    <tr>
+                        <td>@prescription.Id</td>
+                        <td>@prescription.patientId</td>
+                        <td>@prescription.doctorId</td>
+                        <td>@prescription.date</td>
+                        <td>
+                            <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
+                                @onclick="(() => EditPrescription(prescription.Id))">Edit</button>
+                            <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
+                                @onclick="(() => Delete(prescription.Id))">Delete</button>
+                            <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
+                                @onclick="(() => ViewDetails(prescription.Id))">Zobacz szczegoly</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
 
-            </table>
+        </table>
 
-            <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
+        <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
             @onclick="(() => AddPrescription())">Dodaj recepte</button>
-        }
-        else
-        {
-            <h1>Hello Patient!</h1>
 
-        }
 
     </Authorized>
     <NotAuthorized>
@@ -76,7 +70,6 @@
     private string userId;
     private List<Prescription> prescriptionList = new();
 
-    private bool isDoctor = true;
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
@@ -90,7 +83,7 @@
 
         if (userId != null)
         {
-            prescriptionList = db.GetPrescriptions(userId);
+            prescriptionList = db.GetDoctorPrescriptions(userId);
         }
 
     }
@@ -109,5 +102,11 @@
         db.DeletePrescription(id);
 
         NavigationManager.NavigateTo("/prescriptions", forceLoad: true);
+    }
+
+    private void ViewDetails(int id)
+    {
+        Console.WriteLine("WYSWIETLAM JSBDSHBAN");
+        NavigationManager.NavigateTo($"/viewPrescription/{id}");
     }
 }
