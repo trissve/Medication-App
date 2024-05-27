@@ -94,12 +94,12 @@
 
         @if (isDoctor)
         {
-            <h1>Hello!</h1>
+            <h1>Hej!</h1>
         }
         else if (isPatient)
         {
-            <h1>Hello!</h1>
-            <h2>Your Medications:</h2>
+            <h1>Hej!</h1>
+            <h2>Oto twoje leki:</h2>
             <form @onsubmit="@SaveMedications">
                 @foreach (var medication in medList)
                 {
@@ -115,12 +115,12 @@
         }
         else
         {
-            <h1>Hello User!</h1>
+            <h1>Hej! </h1>
         }
 
     </Authorized>
     <NotAuthorized>
-        <p>You are not signed in.</p>
+        <p>Hej! Nie jestes zalogowany</p>
     </NotAuthorized>
 </AuthorizeView>
 

@@ -48,7 +48,7 @@
                         </InputSelect>
 
                         <div class="mb-3">
-                            <label for="@medication.Dosage" class="form-label"> Dosage amount </label>
+                            <label for="@medication.Dosage" class="form-label"> Wielkosc dawki </label>
                             <InputNumber id="dosage" @bind-Value="@medication.Dosage" class="form-control"></InputNumber>
                         </div>
                     }
@@ -56,11 +56,11 @@
                 </div>
             </div>
             <button style="background-color: #8e44ad; border: none" type="submit"
-                class="btn btn-primary">Submit</button>
+                class="btn btn-primary">Akceptuj</button>
             <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-secondary"
-                @onclick="(() => Cancel())">Cancel</button>
+                @onclick="(() => Cancel())">Anuluj</button>
             <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-secondary"
-                @onclick="(() => AddMedication())">Add Med</button>
+                @onclick="(() => AddMedication())">Dodaj lek</button>
         </EditForm>
 
     </div>

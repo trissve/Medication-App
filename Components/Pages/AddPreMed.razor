@@ -7,16 +7,16 @@
 
 @rendermode InteractiveServer
 
-<h2>Add/Edit Medication</h2>
+<h2>Dodaj/Edytuj lek</h2>
 <EditForm Model="@med" OnSubmit="HandleSubmit" FormName="AddMed">
     <div class="mb-3">
-        <label for="Name" class="form-label"> Name </label>
+        <label for="Name" class="form-label"> Nazwa </label>
         <InputText id="name" @bind-Value="med.Name" class="form-control"></InputText>
     </div>
     <div class="mb-3">
-        <label for="med.medType" class="form-label"> Type of med </label>
+        <label for="med.medType" class="form-label"> Rodzaj leku </label>
         <InputSelect id="medType" @bind-Value="med.medType" class="form-select">
-            <option value="">Select Type</option>
+            <option value="">wybeirz rodzaj</option>
             @foreach (var medType in Enum.GetValues(typeof(MedType)).Cast<MedType>())
             {
                 <option value="@medType.ToString()">@medType.ToString()</option>
@@ -25,10 +25,10 @@
 
     </div>
     <div class="mb-3">
-        <label for="med.dosageType" class="form-label"> Dosage </label>
+        <label for="med.dosageType" class="form-label"> Dawka leku </label>
 
         <InputSelect id="DosageType" @bind-Value="med.dosageType" class="form-control">
-            <option value="">Select Dosage</option>
+            <option value="">wybeirz dawke</option>
             @foreach (var dosageType in Enum.GetValues(typeof(DosageType)).Cast<DosageType>())
             {
                 <option value="@dosageType.ToString()">@dosageType.ToString()</option>
@@ -37,22 +37,22 @@
     </div>
 
     <div class="mb-3">
-        <label for="med.Dosage" class="form-label"> Dosage amount </label>
+        <label for="med.Dosage" class="form-label"> Wielkosc dawki </label>
         <InputNumber id="dosage" @bind-Value="med.Dosage" class="form-control"></InputNumber>
     </div>
 
     <div class="mb-3">
-        <label for="med.Time" class="form-label"> Dosage Time </label>
+        <label for="med.Time" class="form-label"> Pora dnia zazywania leku </label>
         <InputSelect id="dosageTime" @bind-Value="med.Time" class="form-control">
-            <option value="">Select Time</option>
+            <option value="">Wybierz pore dnia</option>
             @foreach (var dosageTime in Enum.GetValues(typeof(TimeOfDay)).Cast<TimeOfDay>())
             {
                 <option value="@dosageTime.ToString()">@dosageTime.ToString()</option>
             }
         </InputSelect>
     </div>
-    <button style="background-color: #8e44ad; border: none" type="submit" class="btn btn-primary">Submit</button>
-    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    <button style="background-color: #8e44ad; border: none" type="submit" class="btn btn-primary">Akceptuj</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Anuluj</button>
 </EditForm>
 
 @code {

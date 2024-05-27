@@ -17,17 +17,17 @@
 @inject NavigationManager NavigationManager
 @inject DbHelperMethods db;
 
-<PageTitle>Meds</PageTitle>
-<h3>Your meds</h3>
+<PageTitle>Leki</PageTitle>
+<h3>Twoje leki</h3>
 
 @if (meds.Count == 0)
 {
-    <p><em>No meds added</em></p>
+    <p><em>Nie masz dodanych lekow</em></p>
 
     <div class="row mb-4">
     <div class="col-sm-6">
         <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
-            @onclick="AddMed">New med</button>
+            @onclick="AddMed">Dodaj lek</button>
     </div>
 </div>
 }
@@ -36,18 +36,18 @@ else
     <div class="row mb-4">
     <div class="col-sm-6">
         <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
-            @onclick="AddMed">New med</button>
+            @onclick="AddMed">Dodaj lek</button>
     </div>
 </div>
 
     <table class="table">
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Dosage Type</th>
-            <th>Dosage</th>
-            <th>Time of day</th>
+            <th>Nazwa</th>
+            <th>Rodzaj</th>
+            <th>Rodzaj dawki</th>
+            <th>Dawka</th>
+            <th>Pora dnia</th>
         </tr>
     </thead>
     <tbody>
@@ -61,9 +61,9 @@ else
                     <td>@med.Time</td>
                     <td>
                         <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
-                            @onclick="(() => EditMed(med.Id))">Edit</button>
+                            @onclick="(() => EditMed(med.Id))">Edytuj</button>
                         <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
-                            @onclick="(() => Delete(med.Id))">Delete</button>
+                            @onclick="(() => Delete(med.Id))">Anuluj</button>
                     </td>
                 </tr>
             }
