@@ -119,18 +119,18 @@
             {
                 db.EditMed(med);
             }
-            NavigationManager.NavigateTo("/prescriptions");
+            NavigationManager.NavigateTo("/prescriptionsDoctor");
         }
         else
         {
             db.AddPrescription(prescription);
-            NavigationManager.NavigateTo("/prescriptions");
+            NavigationManager.NavigateTo("/prescriptionsDoctor");
         }
     }
 
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/prescriptions");
+        NavigationManager.NavigateTo("/prescriptionsDoctor");
     }
     private void AddMedication()
     {
