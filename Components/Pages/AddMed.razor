@@ -35,29 +35,37 @@ else
         <EditForm Model="@med" OnSubmit="HandleSubmit" FormName="AddMed">
             <div class="mb-3">
                 <label for="Name" class="form-label"> Nazwa </label>
-                <InputText id="name" @bind-Value="med.Name" class="form-control" disabled="@isEdit"></InputText>
+                <InputText id="name" @bind-Value="med.Name" class="form-control"></InputText>
             </div>
+
             <div class="mb-3">
-                <label for="med.medType" class="form-label"> Rodzaj leku </label>
-                <InputSelect id="medType" @bind-Value="med.medType" class="form-select" disabled="@isEdit">
-                    <option value="">Wybierz rodzaj</option>
-                    @foreach (var medType in Enum.GetValues(typeof(MedType)).Cast<MedType>())
+                <label for="Medication" class="form-label">Rodzaj leku</label>
+                <InputSelect id="@med.Id" @bind-Value="@med.medType" class="form-select">
+                    @foreach (var medType in Enum.GetValues(typeof(MedType)))
                     {
-                        <option value="@medType.ToString()">@medType.ToString()</option>
+                        <option value="@medType">@medType</option>
                     }
                 </InputSelect>
 
             </div>
             <div class="mb-3">
-                <label for="med.dosageType" class="form-label"> Rodzaj dawki </label>
-
-                <InputSelect id="DosageType" @bind-Value="med.dosageType" class="form-control" disabled="@isEdit">
-                    <option value="">Wybierz dawkę</option>
+                <label for="Medication" class="form-label"> Rodzaj dawki </label>
+                <InputSelect id="@med.Id" @bind-Value="@med.dosageType" class="form-select">
+                    <option value="">Wybierz rodzaj</option>
                     @foreach (var dosageType in Enum.GetValues(typeof(DosageType)).Cast<DosageType>())
                     {
-                        <option value="@dosageType.ToString()">@dosageType.ToString()</option>
+                        <option value="@dosageType">@dosageType.ToString()</option>
                     }
                 </InputSelect>
+                @* <label for="med.dosageType" class="form-label"> Rodzaj dawki </label>
+
+                <InputSelect id="DosageType" @bind-Value="med.dosageType" class="form-control" disabled="@isEdit">
+                <option value="">Wybierz dawkę</option>
+                @foreach (var dosageType in Enum.GetValues(typeof(DosageType)).Cast<DosageType>())
+                {
+                <option value="@dosageType.ToString()">@dosageType.ToString()</option>
+                }
+                </InputSelect> *@
             </div>
 
             <div class="mb-3">
@@ -130,7 +138,7 @@ else
         else
         {
             med.userId = userId;
-            med.Taken = false;
+            med.Taken = true;
             db.AddMed(med);
             NavigationManager.NavigateTo("/meds");
         }

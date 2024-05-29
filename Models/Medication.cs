@@ -18,7 +18,7 @@ namespace kokos.Models
         public int Dosage { get; set; }
 
         public TimeOfDay Time { get; set; } = TimeOfDay.Morning;
-        public bool Taken { get; set; }
+        public bool Taken { get; set; } = true;
 
         public int prescrId { get; set; } = 0;
     }

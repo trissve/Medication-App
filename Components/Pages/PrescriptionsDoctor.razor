@@ -36,7 +36,7 @@
                 {
                     <tr>
                         <td>@prescription.Id</td>
-                        <td>@prescription.patientId</td>
+                        <td>@GetPatient(prescription.patientId)</td>
                         <td>@prescription.doctorId</td>
                         <td>@prescription.date</td>
                         <td>
@@ -108,5 +108,12 @@
     {
         Console.WriteLine("WYSWIETLAM JSBDSHBAN");
         NavigationManager.NavigateTo($"/viewPrescription/{id}");
+    }
+
+    private string GetPatient(string id)
+    {
+        var info = db.GetPatientInfo(id);
+        var cred = info.Name + " " + info.Surname;
+        return cred;
     }
 }

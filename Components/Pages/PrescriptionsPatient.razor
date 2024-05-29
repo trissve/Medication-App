@@ -38,8 +38,8 @@
                 {
                     <tr>
                         <td>@prescription.Id</td>
-                        <td>@prescription.patientId</td>
-                        <td>@prescription.doctorId</td>
+                        <td>@GetPatient(prescription.patientId)</td>
+                        <td>@GetPatient(prescription.doctorId)</td>
                         <td>@prescription.date</td>
                         <td>
                             <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
@@ -102,5 +102,12 @@
     {
         Console.WriteLine("WYSWIETLAM JSBDSHBAN");
         NavigationManager.NavigateTo($"/viewPrescription/{id}");
+    }
+
+    private string GetPatient(string id)
+    {
+        var info = db.GetPatientInfo(id);
+        var cred = info.Name + " " + info.Surname;
+        return cred;
     }
 }
