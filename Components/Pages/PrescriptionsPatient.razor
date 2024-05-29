@@ -1,0 +1,113 @@
+@page "/prescriptionsPatient"
+
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using kokos.Data
+@using kokos.Models
+@using kokos.Components.Account
+@using System.Security.Claims
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@* @inject IdentityUserAccessor UserAccessor *@
+@inject IdentityRedirectManager RedirectManager
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject DbHelperMethods db;
+
+<h1>Recepty</h1>
+
+<AuthorizeView>
+    <Authorized>
+
+
+        <h1>Hello Patient!</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Id Pacjenta</th>
+                    <th>Id Lekarza</th>
+                    <th>Data</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var prescription in prescriptionList)
+                {
+                    <tr>
+                        <td>@prescription.Id</td>
+                        <td>@GetPatient(prescription.patientId)</td>
+                        <td>@GetPatient(prescription.doctorId)</td>
+                        <td>@prescription.date</td>
+                        <td>
+                            <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-primary"
+                                @onclick="(() => ViewDetails(prescription.Id))">Zobacz szczegoly</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    </Authorized>
+    <NotAuthorized>
+        <p>Nie jesteś zalogowany.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+
+    private ClaimsPrincipal user;
+    private string userId;
+    private List<Prescription> prescriptionList = new();
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+        var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        userId = userIdClaim?.Value;
+
+        if (userId != null)
+        {
+            prescriptionList = db.GetPatientPrescriptions(userId);
+        }
+
+    }
+    private void AddPrescription()
+    {
+        NavigationManager.NavigateTo($"/addPrescription/");
+    }
+
+    private void EditPrescription(int id)
+    {
+        NavigationManager.NavigateTo($"/addPrescription/{id}");
+    }
+
+    private void Delete(int id)
+    {
+        db.DeletePrescription(id);
+
+        NavigationManager.NavigateTo("/prescriptionsPatient", forceLoad: true);
+    }
+
+    private void ViewDetails(int id)
+    {
+        Console.WriteLine("WYSWIETLAM JSBDSHBAN");
+        NavigationManager.NavigateTo($"/viewPrescription/{id}");
+    }
+
+    private string GetPatient(string id)
+    {
+        var info = db.GetPatientInfo(id);
+        var cred = info.Name + " " + info.Surname;
+        return cred;
+    }
+}

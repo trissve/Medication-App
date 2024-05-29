@@ -1,0 +1,103 @@
+@page "/viewPrescription/{Id:int}"
+
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using kokos.Data
+@using kokos.Models
+@using kokos.Components.Account
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
+@inject DbHelperMethods db;
+
+<h2>Twoja Recepta</h2>
+
+@if (prescription == null)
+{
+    <p>Ładowanie danych recepty...</p>
+}
+else
+{
+    <div>
+    <h3>Informacje o recepcie</h3>
+    <p><strong>Id recepty:</strong> @prescription.Id</p>
+    <p><strong>Id pacjenta:</strong> @GetPatient(prescription.patientId)</p>
+    <p><strong>Id lekarza:</strong> @GetPatient(prescription.doctorId)</p>
+    <p><strong>Data wystawienia:</strong> @prescription.date.ToString("dd-MM-yyyy")</p>
+</div>
+
+    <div>
+    <h3>Lista leków</h3>
+    @if (medList == null || medList.Count == 0)
+        {
+            <p>Brak leków w tej recepcie.</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nazwa</th>
+                        <th>Typ</th>
+                        <th>Dawkowanie</th>
+                        <th>Porcja</th>
+                        <th>Pora dnia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var med in medList)
+                    {
+                        <tr>
+                            <td>@med.Name</td>
+                            <td>@med.medType</td>
+                            <td>@med.dosageType</td>
+                            <td>@med.Dosage</td>
+                            <td>@med.Time</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+}
+
+
+@code {
+
+    [Parameter]
+    public int? Id { get; set; }
+
+    private ClaimsPrincipal user;
+
+    private Prescription? prescription = new Prescription();
+    private List<Medication> medList = new List<Medication>();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+
+    protected override void OnParametersSet()
+    {
+        if (Id is not null)
+        {
+            prescription = db.GetPrescription(Id.Value);
+            medList = db.GetMedList(Id.Value);
+
+        }
+    }
+
+    private string GetPatient(string id)
+    {
+        var info = db.GetPatientInfo(id);
+        var cred = info.Name + " " + info.Surname;
+        return cred;
+    }
+}

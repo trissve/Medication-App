@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using kokos.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace kokos.Models
 {
-    public class DbHelperMethods(MyData db)
+    public class DbHelperMethods(MyData db) : Controller
     {
-        
         public void AddPatientInfo(PatientInfo pInfo)
         {
             db.PatientInfos.Add(pInfo);
@@ -27,6 +29,11 @@ namespace kokos.Models
             return db.PatientInfos.FirstOrDefault(p => p.UserId == userId);
         }
 
+        public List<PatientInfo> GetPatients()
+        {
+            return db.PatientInfos.ToList();
+        }
+
         public void AddMed(Medication med)
         {
             db.Meds.Add(med);
@@ -35,17 +42,15 @@ namespace kokos.Models
 
         public Medication GetMed(int medId)
         {
+            // var med = db.Meds.FirstOrDefault(m => m.Id == medId);
+            // Console.WriteLine($"Med NAME: {med.Name}");
             return db.Meds.FirstOrDefault(m => m.Id == medId);
         }
 
-        public void DeleteMed(string medName)
+        public void EditMed(Medication med)
         {
-            var med = db.Meds.FirstOrDefault(m => m.Name == medName);
-            if (med != null)
-            {
-                db.Meds.Remove(med);
-                db.SaveChanges();
-            }
+            db.Meds.Update(med);
+            db.SaveChanges();
         }
 
         public int GetMedId(string medName)
@@ -58,36 +63,102 @@ namespace kokos.Models
             return db.Meds.Any(m => m.Name == medName);
         }
 
-
-        public List<PatientsMeds> GetPatientMeds(string userId)
+        public List<Medication> GetPatientMeds(string userId)
         {
-            return db.PatientsMeds.Where(m => m.UserId == userId).ToList();
+            return db.Meds.Where(m => m.userId == userId).ToList();
+        }
+        public List<Prescription> GetDoctorPrescriptions(string userId)
+        {
+            return db.Prescriptions.Where(m => m.doctorId == userId).ToList();
+        }
+        public List<Prescription> GetPatientPrescriptions(string userId)
+        {
+            return db.Prescriptions.Where(m => m.patientId == userId).ToList();
+        }
+        public void EditPrescription(Prescription pre)
+        {
+            db.Prescriptions.Update(pre);
+            db.SaveChanges();
+        }
+        public Prescription GetPrescription(int preId)
+        {
+            var pre = db.Prescriptions.FirstOrDefault(m => m.Id == preId);
+            Console.WriteLine($"Prescription ID: {preId}");
+            return pre;
+        }
+        public void AddPrescription(Prescription pre)
+        {
+            db.Prescriptions.Add(pre);
+            db.SaveChanges();
         }
 
-        public void AddPatientsMed(PatientsMeds pMed)
+        public void DeletePrescription(int id)
         {
-            db.PatientsMeds.Add(pMed);
+            var pre = db.Prescriptions.FirstOrDefault(m => m.Id == id);
+
+            if (pre != null)
+            {
+                db.Prescriptions.Remove(pre);
+                db.SaveChanges();
+            }
+        }
+
+        public void AddPatientsMed(Medication pMed)
+        {
+            db.Meds.Add(pMed);
             db.SaveChanges(true);
         }
 
-
-        public PatientsMeds GetPatientMed(int id)
+        public Medication GetPatientMed(int id)
         {
-            return db.PatientsMeds.FirstOrDefault(m => m.Id == id);
+            return db.Meds.FirstOrDefault(m => m.Id == id);
 
         }
 
         public void DeletePatientMed(int id)
         {
-            var pMed = db.PatientsMeds.FirstOrDefault(m => m.Id == id);
+            var pMed = db.Meds.FirstOrDefault(m => m.Id == id);
 
             if (pMed != null)
             {
-                db.PatientsMeds.Remove(pMed);
+                db.Meds.Remove(pMed);
                 db.SaveChanges();
             }
         }
-        
+        public void DeleteMed(int id)
+        {
+            var pMed = db.Meds.FirstOrDefault(m => m.Id == id);
+
+            if (pMed != null)
+            {
+                db.Meds.Remove(pMed);
+                db.SaveChanges();
+            }
+        }
+
+        public List<Medication> GetMedList(int id)
+        {
+
+            var medList = db.Meds.Where(m => m.prescrId == id).ToList();
+            // Console.WriteLine($"COUNT: {medList.Count()} ID: {id}");
+            // foreach (var med in medList)
+            // {
+            //     Console.WriteLine($"Name: {med.Name}, medId: {med.Id}, prescrID: {med.prescrId}");
+            // }
+            return medList;
+        }
+        public List<Medication> GenerateExampleList()
+        {
+            List<Medication> exampleList = new List<Medication>
+            {
+                new Medication { Id = 1, Name = "Medicine A", medType = MedType.Pill, dosageType = DosageType.Mg },
+                new Medication { Id = 2, Name = "Medicine B", medType = MedType.Pill, dosageType = DosageType.Mg },
+                new Medication { Id = 3, Name = "Medicine C", medType = MedType.Liquid, dosageType = DosageType.Mg }
+            };
+
+            return exampleList;
+        }
+
     }
-    
+
 }

@@ -1,0 +1,152 @@
+@page "/addPrescription"
+@page "/addPrescription/{Id:int}"
+
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using kokos.Data
+@using kokos.Models
+@using kokos.Components.Account
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
+@inject DbHelperMethods db;
+
+<h2>Wystaw Receptę</h2>
+<div class="row">
+    <div class="col-sm-4">
+        <EditForm Model="@prescription" OnSubmit="HandleSubmit" FormName="AddPrescription">
+            <div class="mb-3">
+                <label for="prescription.patientId" class="form-label">Wybierz pacjenta</label>
+                <InputSelect id="patientId" @bind-Value="prescription.patientId" class="form-select" required>
+                    <option value="">Wybierz pacjenta</option>
+                    @foreach (var patient in patients)
+                    {
+                        <option value="@patient.UserId">@patient.Name @patient.Surname</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="mb-3">
+                <div>
+                    <h3>Leki</h3>
+                    @foreach (var medication in medList)
+                    {
+                        <label for="@medication.Id" class="form-label">Nazwa leku</label>
+                        <InputText id="@medication.Id" @bind-Value="@medication.Name" class="form-control" />
+                        <label for="Medication" class="form-label">Rodzaj leku</label>
+                        <InputSelect id="@medication.Id" @bind-Value="@medication.medType" class="form-select">
+                            @foreach (var medType in Enum.GetValues(typeof(MedType)))
+                            {
+                                <option value="@medType">@medType</option>
+                            }
+                        </InputSelect>
+
+                        <div class="mb-3">
+                            <label for="@medication.Dosage" class="form-label"> Wielkosc dawki </label>
+                            <InputNumber id="dosage" @bind-Value="@medication.Dosage" class="form-control"></InputNumber>
+                        </div>
+                    }
+
+                </div>
+            </div>
+            <button style="background-color: #8e44ad; border: none" type="submit"
+                class="btn btn-primary">Akceptuj</button>
+            <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-secondary"
+                @onclick="(() => Cancel())">Anuluj</button>
+            <button style="background-color: #8e44ad; border: none" type="button" class="btn btn-secondary"
+                @onclick="(() => AddMedication())">Dodaj lek</button>
+        </EditForm>
+
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int? Id { get; set; }
+
+    private ClaimsPrincipal user;
+    private string userId;
+    private PatientInfo pInfo = new();
+    bool isEdit = false;
+
+    private Prescription? prescription = new Prescription();
+    private List<PatientInfo> patients = new List<PatientInfo>();
+    private List<Medication> medList = new List<Medication>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            var userIdClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            userId = userIdClaim?.Value;
+        }
+        patients = db.GetPatients();
+    }
+
+
+    protected override void OnParametersSet()
+    {
+        if (Id is not null)
+        {
+            isEdit = true;
+            prescription = db.GetPrescription(Id.Value);
+            medList = db.GetMedList(Id.Value);
+
+        }
+        else
+            prescription.doctorId = userId;
+    }
+
+
+
+    private void HandleSubmit()
+    {
+        prescription.date = DateTime.UtcNow.ToLocalTime();
+        if (isEdit)
+        {
+            db.EditPrescription(prescription);
+            foreach (var med in medList)
+            {
+                db.EditMed(med);
+            }
+            NavigationManager.NavigateTo("/prescriptionsDoctor");
+        }
+        else
+        {
+            db.AddPrescription(prescription);
+            NavigationManager.NavigateTo("/prescriptionsDoctor");
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/prescriptionsDoctor");
+    }
+    private void AddMedication()
+    {
+        prescription.date = DateTime.UtcNow.ToLocalTime();
+        if (isEdit)
+            db.EditPrescription(prescription);
+        else
+            db.AddPrescription(prescription);
+
+        var newMed = new Medication();
+        newMed.prescrId = prescription.Id;
+        newMed.userId = prescription.patientId;
+        newMed.Name = "default";
+        db.AddMed(newMed);
+        medList.Add(newMed);
+
+        NavigationManager.NavigateTo($"/addPreMed/{newMed.Id}", forceLoad: true);
+    }
+}
